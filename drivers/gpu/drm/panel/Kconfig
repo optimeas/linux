@@ -507,4 +507,15 @@ config DRM_PANEL_XINPENG_XPP055C272
 	  Say Y here if you want to enable support for the Xinpeng
 	  XPP055C272 controller for 720x1280 LCD panels with MIPI/RGB/SPI
 	  system interfaces.
+
+config DRM_PANEL_RPI_7INCH
+	tristate "RaspberryPi 7inch display panel driver"
+	depends on OF && I2C
+	depends on DRM_MIPI_DSI
+	select RPI_DISPLAY
+	select TOUCHSCREEN_RPI_FT5406
+	select VIDEOMODE_HELPERS
+	help
+	  Say Y here if you want to enable support for the official RaspberryPi 7inch panel.
+
 endmenu
