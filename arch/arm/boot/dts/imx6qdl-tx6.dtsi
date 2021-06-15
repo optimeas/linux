@@ -283,6 +283,7 @@
 	clock-names = "ipg", "ahb", "ptp", "enet_out";
 	phy-mode = "rmii";
 	phy-reset-gpios = <&gpio7 6 GPIO_ACTIVE_LOW>;
+	phy-reset-duration = <25>;
 	phy-reset-post-delay = <10>;
 	phy-handle = <&etnphy>;
 	phy-supply = <&reg_3v3_etn>;
@@ -293,12 +294,13 @@
 		#size-cells = <0>;
 
 		etnphy: ethernet-phy@0 {
-			compatible = "ethernet-phy-ieee802.3-c22";
 			reg = <0>;
+			clocks = <&clks IMX6QDL_CLK_ENET_REF>;
 			pinctrl-names = "default";
 			pinctrl-0 = <&pinctrl_etnphy_int>;
 			interrupt-parent = <&gpio7>;
 			interrupts = <1 IRQ_TYPE_EDGE_FALLING>;
+			smsc,disable-energy-detect;
 		};
 	};
 };
@@ -738,12 +740,14 @@
 &pwm1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_pwm1>;
+	#pwm-cells = <3>;
 	status = "disabled";
 };
 
 &pwm2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_pwm2>;
+	#pwm-cells = <3>;
 	status = "okay";
 };
 
