@@ -366,7 +366,7 @@ static int ehci_platform_probe(struct platform_device *dev)
 	if (err)
 		goto err_power;
 
-	priv->wakeirq = platform_get_irq(dev, 1);
+	priv->wakeirq = platform_get_irq_optional(dev, 1);
 	if (priv->wakeirq > 0) {
 		err = dev_pm_set_dedicated_wake_irq(hcd->self.controller,
 						    priv->wakeirq);
