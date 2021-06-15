@@ -405,6 +405,7 @@ int dwc2_check_core_version(struct dwc2_hsotg *hsotg)
  * in the device private data. This allows the driver to access the dwc2_hsotg
  * structure on subsequent calls to driver methods for this device.
  */
+#define DWC2_INTR_PATCH
 static int dwc2_driver_probe(struct platform_device *dev)
 {
 	struct dwc2_hsotg *hsotg;
@@ -444,7 +445,7 @@ static int dwc2_driver_probe(struct platform_device *dev)
 	hsotg->irq = platform_get_irq(dev, 0);
 	if (hsotg->irq < 0)
 		return hsotg->irq;
-
+#ifndef DWC2_INTR_PATCH
 	dev_dbg(hsotg->dev, "registering common handler for irq%d\n",
 		hsotg->irq);
 	retval = devm_request_irq(hsotg->dev, hsotg->irq,
@@ -452,7 +453,7 @@ static int dwc2_driver_probe(struct platform_device *dev)
 				  dev_name(hsotg->dev), hsotg);
 	if (retval)
 		return retval;
-
+#endif
 	hsotg->vbus_supply = devm_regulator_get_optional(hsotg->dev, "vbus");
 	if (IS_ERR(hsotg->vbus_supply)) {
 		retval = PTR_ERR(hsotg->vbus_supply);
@@ -576,7 +577,15 @@ static int dwc2_driver_probe(struct platform_device *dev)
 		}
 		hsotg->hcd_enabled = 1;
 	}
-
+#ifdef DWC2_INTR_PATCH
+	dev_dbg(hsotg->dev, "registering common handler for irq%d\n",
+		hsotg->irq);
+	retval = devm_request_irq(hsotg->dev, hsotg->irq,
+				  dwc2_handle_common_intr, IRQF_SHARED,
+				  dev_name(hsotg->dev), hsotg);
+	if (retval)
+		goto error_init;
+#endif
 	platform_set_drvdata(dev, hsotg);
 	hsotg->hibernated = 0;
 
