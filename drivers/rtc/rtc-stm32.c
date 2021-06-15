@@ -780,7 +780,7 @@ static int stm32_rtc_probe(struct platform_device *pdev)
 
 	ret = device_init_wakeup(&pdev->dev, true);
 	if (rtc->data->has_wakeirq) {
-		rtc->wakeirq_alarm = platform_get_irq(pdev, 1);
+		rtc->wakeirq_alarm = platform_get_irq_optional(pdev, 1);
 		if (rtc->wakeirq_alarm > 0) {
 			ret = dev_pm_set_dedicated_wake_irq(&pdev->dev,
 							    rtc->wakeirq_alarm);
