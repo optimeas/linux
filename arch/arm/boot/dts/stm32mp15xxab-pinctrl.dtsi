@@ -4,6 +4,12 @@
  * Author: Alexandre Torgue <alexandre.torgue@st.com> for STMicroelectronics.
  */
 
+/ {
+	soc {
+		/delete-node/ pin-controller-z@54004000;
+	};
+};
+
 &pinctrl {
 	st,package = <STM32MP_PKG_AB>;
 
