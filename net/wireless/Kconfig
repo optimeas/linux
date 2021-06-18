@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-only
 config WIRELESS_EXT
+	def_bool y
 	bool
 
 config WEXT_CORE
@@ -12,9 +13,11 @@ config WEXT_PROC
 	depends on WEXT_CORE
 
 config WEXT_SPY
+	def_bool y
 	bool
 
 config WEXT_PRIV
+	def_bool y
 	bool
 
 config CFG80211
@@ -39,6 +42,7 @@ config CFG80211
 if CFG80211
 
 config NL80211_TESTMODE
+	def_bool y
 	bool "nl80211 testmode command"
 	help
 	  The nl80211 testmode command helps implementing things like
