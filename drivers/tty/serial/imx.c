@@ -2222,6 +2222,16 @@ static int imx_uart_probe_dt(struct imx_port *sport,
 	if (of_get_property(np, "fsl,inverted-rx", NULL))
 		sport->inverted_rx = 1;
 
+	if (of_property_read_bool(np, "linux,rs485-enabled-at-boot-time")) {
+		dev_info(&pdev->dev, "rs485 enabled at boot time.\n");
+		sport->port.rs485.flags |= SER_RS485_ENABLED;
+		sport->port.rs485.flags |= SER_RS485_RTS_ON_SEND;       /* Set logical level for RTS pin equal to 1 when sending */
+		sport->port.rs485.flags &= ~(SER_RS485_RTS_AFTER_SEND); /* Set logical level for RTS pin equal to 0 after sending */
+	}
+
+	if (of_get_property(np, "rs485-rx-during-tx", NULL))
+		sport->port.rs485.flags |= SER_RS485_RX_DURING_TX;
+
 	return 0;
 }
 #else
