@@ -1,0 +1,211 @@
+/*
+ * Copyright 2015-2017 Lothar Waßmann <LW@KARO-electronics.de>
+ * Copyright 2021 Matthias Klein <matthias.klein@optimeas.de>
+ *
+ * This file is dual-licensed: you can use it either under the terms
+ * of the GPL or the X11 license, at your option. Note that this dual
+ * licensing only applies to this file, and not this project as a
+ * whole.
+ *
+ *  a) This file is free software; you can redistribute it and/or
+ *     modify it under the terms of the GNU General Public License
+ *     version 2 as published by the Free Software Foundation.
+ *
+ *     This file is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ * Or, alternatively,
+ *
+ *  b) Permission is hereby granted, free of charge, to any person
+ *     obtaining a copy of this software and associated documentation
+ *     files (the "Software"), to deal in the Software without
+ *     restriction, including without limitation the rights to use,
+ *     copy, modify, merge, publish, distribute, sublicense, and/or
+ *     sell copies of the Software, and to permit persons to whom the
+ *     Software is furnished to do so, subject to the following
+ *     conditions:
+ *
+ *     The above copyright notice and this permission notice shall be
+ *     included in all copies or substantial portions of the Software.
+ *
+ *     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ *     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ *     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ *     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ *     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ *     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ *     OTHER DEALINGS IN THE SOFTWARE.
+ *
+ *     based on imx6dl-tx6s-8035.dts
+ *
+ *
+ *     WARNING: This device tree is completely untested!
+ */
+
+/dts-v1/;
+#include "imx6dl.dtsi"
+#include "imx6qdl-tx6.dtsi"
+
+/ {
+	model = "optiMEAS smartPRO";
+	compatible = "optimeas,tx6s-smartpro", "karo,imx6dl-tx6dl", "fsl,imx6dl";
+
+	cpus {
+		/delete-node/ cpu@1;
+	};
+
+	/* Fixed indices for mmcblk devices */
+	aliases {
+		mmc0 = &usdhc1; /* 2190000 | /dev/mmcblk0 | external SD card */
+		mmc1 = &usdhc2; /* 2194000 | /dev/mmcblk1 | internal SD card on smartMINI */
+		mmc2 = &usdhc4; /* 219c000 | /dev/mmcblk2 | eMMC */
+		mmc3 = &usdhc3; /* 2198000 | /dev/mmcblk3 | not used */
+	};
+};
+
+&uart2 { /* ttymxc1 (RS232/485): pin63 / 64 */
+	pinctrl-0 = <&pinctrl_uart2 &pinctrl_uart2_rtscts>;
+    uart-has-rtscts;
+};
+
+&uart3 { /* ttymxc2 (GPS): pin67 / 68 */
+	pinctrl-0 = <&pinctrl_uart3 &pinctrl_uart3_rtscts>;
+	uart-has-rtscts;
+};
+
+&ds1339 {
+	status = "disabled";
+};
+
+&gpmi {
+	status = "disabled";
+};
+
+&sgtl5000 {
+	status = "disabled";
+};
+
+&kpp {
+	status = "disabled";
+};
+
+&usdhc4 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usdhc4>;
+	bus-width = <4>;
+	non-removable;
+	no-1-8-v;
+	fsl,wp-controller;
+	status = "okay";
+};
+
+/* I2C1 - pin 40 + 41 */
+&i2c3 {
+	clock-frequency = <100000>;
+};
+
+/* I2C2 - pin 80 + 75 */
+&i2c2 {
+	pinctrl-names = "default", "gpio";
+	pinctrl-0 = <&pinctrl_i2c2>;
+	pinctrl-1 = <&pinctrl_i2c2_gpio>;
+	scl-gpios = <&gpio4 12 GPIO_ACTIVE_HIGH>;
+	sda-gpios = <&gpio4 13 GPIO_ACTIVE_HIGH>;
+	clock-frequency = <400000>;
+	status = "okay";
+};
+
+/* SPI1 - pin 44 - 49 */
+&ecspi1 {
+    compatible = "om,imx53-ecspi";
+	pinctrl-0 = <&pinctrl_ecspi1_native_cs>;
+    fsl,spi-num-chipselects = <2>;
+    status = "okay";
+    /delete-node/ spi@0;
+    /delete-node/ spi@1;
+};
+
+/* CAN1 - pin 74, 79, 77 */
+&can1 {
+    pinctrl-0 = <&pinctrl_flexcan1_smartlog>;
+	status = "okay";
+};
+
+&iomuxc {
+	pinctrl-0 = <&pinctrl_hog &pinctrl_optimeas>;
+
+	pinctrl_optimeas: optimeasgrp {
+		fsl,pins = <
+			MX6QDL_PAD_NANDF_CS2__GPIO6_IO15    0x1b0b0 /* IN:  GPIO6[15]  - BOOT_SELECT_0     */
+			MX6QDL_PAD_EIM_D29__GPIO3_IO29      0x1b0b0 /* IN:  GPIO2[29]  - BOOT_SELECT_1     */
+			MX6QDL_PAD_GPIO_9__GPIO1_IO09       0x1f0f0	/* OUT: GPIO NR9   - USB_HUB_RESET         */
+			MX6QDL_PAD_GPIO_1__GPIO1_IO01       0x1f0f0	/* OUT: GPIO NR1   - BUZZER  TODO: collides with PWM */                     
+			MX6QDL_PAD_EIM_A18__GPIO2_IO20      0x1f0f0	/* OUT: GPIO2[20]  - FPGA_MISC_0       */
+			MX6QDL_PAD_EIM_A17__GPIO2_IO21      0x1f0f0	/* OUT: GPIO2[21]  - FPGA_MISC_1       */
+			MX6QDL_PAD_EIM_A20__GPIO2_IO18      0x1f0f0	/* OUT: GPIO2[18]  - FPGA_MISC_2       */
+			MX6QDL_PAD_EIM_A19__GPIO2_IO19		0x1f0f0	/* OUT: GPIO2[19]  - FPGA_MISC_3       */
+			MX6QDL_PAD_EIM_A22__GPIO2_IO16		0x1f0f0	/* OUT: GPIO2[16]  - FPGA_MISC_4       */
+			MX6QDL_PAD_EIM_A21__GPIO2_IO17		0x1f0f0	/* OUT: GPIO2[17]  - FPGA_MISC_5       */
+			MX6QDL_PAD_EIM_A24__GPIO5_IO04      0x1f0f0	/* OUT: GPIO5[4]   - FPGA_MISC_6       */
+			MX6QDL_PAD_EIM_A23__GPIO6_IO06		0x1f0f0	/* OUT: GPIO6[6]   - FPGA_MISC_7       */
+  			MX6QDL_PAD_CSI0_DAT12__GPIO5_IO30	0x1f0f0	/* OUT: GPIO NR 158 - ENV_DO_0         */
+			MX6QDL_PAD_CSI0_DAT13__GPIO5_IO31	0x1f0f0	/* OUT: GPIO NR 159 - ENV_DO_1         */
+			MX6QDL_PAD_CSI0_DAT14__GPIO6_IO00	0x1f0f0	/* OUT: GPIO NR 160 - ENV_DO_2         */
+			MX6QDL_PAD_CSI0_DAT15__GPIO6_IO01	0x1f0f0	/* OUT: GPIO NR 161 - ENV_DO_3         */
+			MX6QDL_PAD_CSI0_DAT16__GPIO6_IO02	0x1b0b0	/* IN:  GPIO NR 162 - ENV_DI_0         */
+			MX6QDL_PAD_CSI0_DAT17__GPIO6_IO03	0x1b0b0	/* IN:  GPIO NR 163 - ENV_DI_1         */
+			MX6QDL_PAD_CSI0_DAT18__GPIO6_IO04	0x1b0b0	/* IN:  GPIO NR 164 - ENV_DI_2         */
+			MX6QDL_PAD_CSI0_DAT19__GPIO6_IO05	0x1b0b0	/* IN:  GPIO NR 165 - ENV_DI_3         */
+			MX6QDL_PAD_DI0_PIN15__GPIO4_IO17	0x1b0b0	/* IN:  GPIO NR 113 - BUTTON_POWER     */
+			MX6QDL_PAD_DI0_PIN2__GPIO4_IO18		0x1b0b0	/* IN:  GPIO NR 114 - BUTTON_USER      */
+		>;
+	};
+
+	pinctrl_usdhc4: usdhc4grp {
+		fsl,pins = <
+			MX6QDL_PAD_SD4_CMD__SD4_CMD		0x070b1
+			MX6QDL_PAD_SD4_CLK__SD4_CLK		0x070b1
+			MX6QDL_PAD_SD4_DAT0__SD4_DATA0		0x070b1
+			MX6QDL_PAD_SD4_DAT1__SD4_DATA1		0x070b1
+			MX6QDL_PAD_SD4_DAT2__SD4_DATA2		0x070b1
+			MX6QDL_PAD_SD4_DAT3__SD4_DATA3		0x070b1
+			MX6QDL_PAD_NANDF_ALE__SD4_RESET		0x0b0b1
+		>;
+	};
+
+	pinctrl_i2c2: i2c2grp {
+		fsl,pins = <
+			MX6QDL_PAD_KEY_COL3__I2C2_SCL		0x4001b8b1
+			MX6QDL_PAD_KEY_ROW3__I2C2_SDA		0x4001b8b1
+		>;
+	};
+
+	pinctrl_i2c2_gpio: i2c2-gpiogrp {
+		fsl,pins = <
+			MX6QDL_PAD_KEY_COL3__GPIO4_IO12		0x4001b8b1
+			MX6QDL_PAD_KEY_ROW3__GPIO4_IO13		0x4001b8b1
+		>;
+	};
+	
+	pinctrl_ecspi1_native_cs: ecspi1grp_native_cs {
+		fsl,pins = <
+			MX6QDL_PAD_EIM_D18__ECSPI1_MOSI		0x0b0b0
+			MX6QDL_PAD_EIM_D17__ECSPI1_MISO		0x0b0b0
+			MX6QDL_PAD_EIM_D16__ECSPI1_SCLK		0x0b0b0
+			MX6QDL_PAD_GPIO_19__ECSPI1_RDY		0x0b0b0
+			MX6QDL_PAD_EIM_EB2__ECSPI1_SS0		0x0b0b0 /* SPI CS0 - native */
+			MX6QDL_PAD_EIM_D19__ECSPI1_SS1		0x0b0b0 /* SPI CS1 - native */
+		>;
+	};
+	
+	pinctrl_flexcan1_smartlog: flexcan1grp {
+		fsl,pins = <
+			MX6QDL_PAD_KEY_COL2__FLEXCAN1_TX	0x1b0b0
+			MX6QDL_PAD_KEY_ROW2__FLEXCAN1_RX	0x1b0b0
+		>;
+	};		
+};
+
