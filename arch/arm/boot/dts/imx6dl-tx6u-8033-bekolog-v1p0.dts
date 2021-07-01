@@ -143,7 +143,26 @@
 	status = "disabled";
 };
 
+&can2 {
+	status = "disabled";
+};
+
+/*
+echo 111 > /sys/class/gpio/export
+echo out > /sys/class/gpio/gpio111/direction
+echo 1 > /sys/class/gpio/gpio111/value
+echo 0 > /sys/class/gpio/gpio111/value
+*/
+
 &iomuxc {
+	pinctrl-0 = <&pinctrl_hog &pinctrl_optimeas>;
+
+	pinctrl_optimeas: optimeasgrp {
+		fsl,pins = <
+			MX6QDL_PAD_KEY_ROW4__GPIO4_IO15		0x1f0f0	// OUT: CAN1_RX, Ka-Ro Pin 81, R200 on connector board (Debug line to trigger a scope)
+		>;
+	};
+
 	pinctrl_usdhc4: usdhc4grp {
 		fsl,pins = <
 			MX6QDL_PAD_SD4_CMD__SD4_CMD		0x070b1
