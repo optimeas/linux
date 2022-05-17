@@ -195,6 +195,8 @@ struct esdhc_soc_data {
 	u32 flags;
 };
 
+static int instance_nr = 0;
+
 static const struct esdhc_soc_data esdhc_imx25_data = {
 	.flags = ESDHC_FLAG_ERR004536,
 };
@@ -291,6 +293,7 @@ struct pltfm_imx_data {
 		WAIT_FOR_INT,        /* sent CMD12, waiting for response INT */
 	} multiblock_status;
 	u32 is_ddr;
+	int instance;
 	struct pm_qos_request pm_qos_req;
 };
 
@@ -895,6 +898,15 @@ static inline void esdhc_pltfm_set_clock(struct sdhci_host *host,
 		clock = min(clock, max_clock);
 	}
 
+    if(imx_data->instance == 0)
+    {
+        if(clock > 5000000) // not increase at the slower accesses ...
+        {
+            dev_info(mmc_dev(host->mmc), "force 5 MHz\n");
+            clock = 5000000;
+        }
+    }
+
 	while (host_clock / (16 * pre_div * ddr_pre_div) > clock &&
 			pre_div < 256)
 		pre_div *= 2;
@@ -903,7 +915,7 @@ static inline void esdhc_pltfm_set_clock(struct sdhci_host *host,
 		div++;
 
 	host->mmc->actual_clock = host_clock / (div * pre_div * ddr_pre_div);
-	dev_dbg(mmc_dev(host->mmc), "desired SD clock: %d, actual: %d\n",
+	dev_info(mmc_dev(host->mmc), "desired SD clock: %d, actual: %d\n",
 		clock, host->mmc->actual_clock);
 
 	pre_div >>= 1;
@@ -1532,6 +1544,10 @@ sdhci_esdhc_imx_probe_dt(struct platform_device *pdev,
 
 	if (mmc_gpio_get_cd(host->mmc) >= 0)
 		host->quirks &= ~SDHCI_QUIRK_BROKEN_CARD_DETECTION;
+
+    imx_data->instance = instance_nr;
+    dev_info(mmc_dev(host->mmc), "instance_nr %d\n", instance_nr);
+    instance_nr++;
 
 	return 0;
 }
