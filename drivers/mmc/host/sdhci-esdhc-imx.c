@@ -900,10 +900,10 @@ static inline void esdhc_pltfm_set_clock(struct sdhci_host *host,
 
     if(imx_data->instance == 0)
     {
-        if(clock > 12000000) // not increase at the slower accesses ...
+        if(clock > 25000000) // not increase at the slower accesses ...
         {
-            dev_info(mmc_dev(host->mmc), "force 12 MHz\n");
-            clock = 12000000;
+            dev_info(mmc_dev(host->mmc), "force 25 MHz\n");
+            clock = 25000000;
         }
     }
 
